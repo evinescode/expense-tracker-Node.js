@@ -1,0 +1,107 @@
+[
+  {
+    "title": "transport",
+    "date": "2026-09-11",
+    "id": "1",
+    "category": "bolt",
+    "amount": 5000
+  },
+  {
+    "title": "food",
+    "date": "2026-09-11",
+    "id": "2",
+    "category": "dinner",
+    "amount": 25000
+  },
+  {
+    "title": "food",
+    "date": "2026-09-11",
+    "id": "3",
+    "category": "lunch",
+    "amount": 45000
+  },
+  {
+    "title": "bundle",
+    "date": "2026-09-11",
+    "id": "4",
+    "category": "internet",
+    "amount": 12000
+  },
+  {
+    "title": "stationary",
+    "date": "2026-09-11",
+    "id": "5",
+    "category": "education",
+    "amount": 6500
+  },
+  {
+    "title": "breakfast",
+    "date": "2026-09-12",
+    "id": "6",
+    "category": "food",
+    "amount": 4500
+  },
+  {
+    "title": "lunch",
+    "date": "2026-09-15",
+    "id": "7",
+    "category": "food",
+    "amount": 30000
+  },
+  {
+    "title": "stationary",
+    "date": "2026-09-15",
+    "id": "8",
+    "category": "education",
+    "amount": 12000
+  },
+  {
+    "title": "transport",
+    "date": "2026-02-30",
+    "id": "9",
+    "category": "transportation",
+    "amount": 50000
+  },
+  {
+    "title": "dinner",
+    "date": "2026-02-30",
+    "id": "11",
+    "category": "food",
+    "amount": 4500
+  },
+  {
+    "title": "transport",
+    "date": "2026-09-17",
+    "id": 14,
+    "category": "transportation",
+    "amount": 3000
+  },
+  {
+    "title": "lunch",
+    "date": "2026-09-22",
+    "id": 17,
+    "category": "food",
+    "amount": 45000
+  },
+  {
+    "title": "lunch",
+    "date": "2026-09-23",
+    "id": 21,
+    "category": "food",
+    "amount": 23000
+  },
+  {
+    "title": "lunch",
+    "date": "2026-09-23",
+    "id": 23,
+    "category": "food",
+    "amount": 23400
+  },
+  {
+    "title": "internet",
+    "date": "2026-09-23",
+    "id": 24,
+    "category": "bill",
+    "amount": 11000
+  }
+]

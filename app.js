@@ -1,0 +1,533 @@
+// Import the readline module.
+// It allows us to receive input from the terminal.
+const readline = require("readline");
+
+// Import the promises version of the File System module.
+// We use it to read and write our expense.json file.
+const fs = require("fs").promises;
+
+
+// Create the readline interface.
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+});
+
+
+// This function asks a question in the terminal
+// and returns the user's answer as a Promise.
+function askQuestion(question) {
+    return new Promise((resolve) => {
+        rl.question(question, (answer) => {
+            resolve(answer);
+        });
+    });
+}
+
+// Display the main menu to the user.
+function showMenu() {
+
+    console.log("\n=============================");
+    console.log("       EXPENSE TRACKER");
+    console.log("=============================");
+
+    console.log("1. Add Expense");
+    console.log("2. View Expenses");
+    console.log("3. Delete Expense");
+    console.log("4. Update Expense");
+    console.log("5. Exit");
+}
+
+
+// Display and handle the main menu.
+async function showMainMenu() {
+
+    // Store the user's choice.
+    let choice = "";
+
+    // Keep showing the menu until the user chooses 4.
+    while (choice !== "5") {
+
+        // Display the menu.
+        showMenu();
+
+        // Ask the user to choose an option.
+        choice = await askQuestion("Choose an option: ");
+
+
+        // Check which option the user selected.
+      if (choice === "1") {
+
+    await addExpense();
+
+} else if (choice === "2") {
+
+    await viewExpenses();
+
+} else if (choice === "3") {
+
+    await deleteExpense();
+
+} else if (choice === "4") {
+
+    console.log("Goodbye!");
+
+    rl.close();
+
+} else {
+
+    console.log(
+        "Invalid option. Please choose 1, 2, 3, or 4."
+    );
+}    
+ }
+    
+}
+
+
+// Main function where our Expense Tracker logic runs.
+async function addExpense() {
+
+    // Ask the user for expense information.
+    const title = await askQuestion("Enter your expense title: ");
+
+    const date = await askQuestion(
+        "Enter the date of the expense (YYYY-MM-DD): "
+    );
+
+    const id = await askQuestion("Enter the expense ID: ");
+
+    const category = await askQuestion(
+        "Enter the category of the expense: "
+    );
+
+    const amount = await askQuestion(
+        "Enter the expense amount: "
+    );
+
+
+    // Remove unnecessary spaces from the beginning
+    // and end of every input.
+    const cleanTitle = title.trim();
+    const cleanDate = date.trim();
+    const cleanId = id.trim();
+    const cleanCategory = category.trim();
+    const cleanAmount = amount.trim();
+
+    // Convert the ID from a string into a number.
+const numericId = Number(cleanId);
+
+
+    // ------------------------------------------------
+    // 1. CHECK EMPTY FIELDS
+    // ------------------------------------------------
+
+    if (
+        cleanTitle === "" ||
+        cleanDate === "" ||
+        cleanId === "" ||
+        cleanCategory === "" ||
+        cleanAmount === ""
+    ) {
+
+        console.log("All fields are required.");
+
+     
+
+        return;
+    }
+
+    // Check whether the title contains at least one letter.
+const titlePattern = /[A-Za-z]/;
+
+if (!titlePattern.test(cleanTitle)) {
+    console.log("Invalid title. Please enter a valid expense title.");
+  
+    return;
+}
+
+// Check whether the category contains at least one letter.
+const categoryPattern = /[A-Za-z]/;
+
+if (!categoryPattern.test(cleanCategory)) {
+    console.log("Invalid category. Please enter a valid category.");
+   
+    return;
+}
+
+
+    // Check whether the ID is a whole number
+// and greater than zero.
+if (!Number.isInteger(numericId) || numericId <= 0) {
+
+    // Tell the user that the ID is invalid.
+    console.log("Invalid ID. Please enter a positive whole number.");
+
+   
+   
+
+    // Stop the main function.
+    return;
+}
+
+
+    // ------------------------------------------------
+    // 2. CHECK DATE FORMAT
+    // ------------------------------------------------
+
+    // This regular expression checks whether
+    // the date follows YYYY-MM-DD.
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+
+    // Test the user's date against the pattern.
+    if (!datePattern.test(cleanDate)) {
+
+        console.log(
+            "Invalid date format. Please use YYYY-MM-DD."
+        );
+
+       
+
+        return;
+    }
+
+
+    // ------------------------------------------------
+    // 3. CHECK WHETHER THE DATE ACTUALLY EXISTS
+    // ------------------------------------------------
+
+    const [year, month, day] = cleanDate.split("-");
+
+
+    // Convert the three parts from strings to numbers.
+    const numericYear = Number(year);
+    const numericMonth = Number(month);
+    const numericDay = Number(day);
+
+
+    // Create a JavaScript Date object.
+    //
+    // JavaScript months start from 0:
+    //
+    // January = 0
+    // February = 1
+    // March = 2
+    // ...
+    // December = 11
+    const dateObject = new Date(
+        numericYear,
+        numericMonth - 1,
+        numericDay
+    );
+
+
+    // Check whether JavaScript created
+    // exactly the same date we entered.
+    const isValidDate =
+        dateObject.getFullYear() === numericYear &&
+        dateObject.getMonth() === numericMonth - 1 &&
+        dateObject.getDate() === numericDay;
+
+
+    // If the date does not actually exist,
+    // stop the program.
+    if (!isValidDate) {
+
+        console.log(
+            "Invalid date. Please enter a real date."
+        );
+
+       
+
+        return;
+    }
+
+
+    // ------------------------------------------------
+    // 4. READ THE JSON FILE
+    // ------------------------------------------------
+
+    try {
+
+        // Read the expense.json file.
+        const data = await fs.readFile(
+            "./data/expense.json",
+            "utf8"
+        );
+
+
+        // Convert JSON text into a JavaScript array.
+        const expenses = JSON.parse(data);
+
+
+        // Check whether there are no saved expenses.
+if (expenses.length === 0) {
+
+    // Tell the user that there are no expenses.
+    console.log("No expenses found.");
+
+    // Stop this function.
+    return;
+}
+
+
+        // ------------------------------------------------
+        // 5. VALIDATE AMOUNT
+        // ------------------------------------------------
+
+        // Convert amount from string to number.
+        const numericAmount = Number(cleanAmount);
+
+
+       // Check whether the amount is a valid number
+// and greater than zero.
+if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+
+    console.log(
+        "Invalid amount. Please enter a number greater than 0."
+    );
+
+   
+
+    return;
+}
+        
+
+
+        // ------------------------------------------------
+        // 6. CREATE NEW EXPENSE OBJECT
+        // ------------------------------------------------
+
+        const expense = {
+
+            // Expense title.
+            title: cleanTitle,
+
+            // Expense date.
+            date: cleanDate,
+
+            // Expense ID.
+            id: numericId,
+
+            // Expense category.
+            category: cleanCategory,
+
+            // Expense amount as a number.
+            amount: numericAmount
+        };
+
+
+        // ------------------------------------------------
+        // 7. CHECK DUPLICATE ID
+        // ------------------------------------------------
+
+        const existingExpense = expenses.find(
+            (item) => item.id === numericId
+        );
+
+
+        if (existingExpense) {
+
+            console.log("Expense ID already exists.");
+
+          
+
+            return;
+        }
+
+
+        // ------------------------------------------------
+        // 8. ADD EXPENSE TO ARRAY
+        // ------------------------------------------------
+
+        expenses.push(expense);
+
+
+        // ------------------------------------------------
+        // 9. SAVE ARRAY BACK TO JSON FILE
+        // ------------------------------------------------
+
+        await fs.writeFile(
+            "./data/expense.json",
+            JSON.stringify(expenses, null, 2)
+        );
+
+
+        // Tell the user that saving was successful.
+        console.log("Expense saved successfully.");
+
+
+    } catch (err) {
+
+        // Display an error if something goes wrong.
+        console.error(err);
+    }
+
+
+   
+   
+}
+
+
+// Function for deleting an expense.
+async function deleteExpense() {
+
+    // Ask the user for the ID of the expense to delete.
+    const id = await askQuestion(
+        "Enter the expense ID to delete: "
+    );
+
+    // Remove unnecessary spaces.
+    const cleanId = id.trim();
+
+    // Convert the ID from a string into a number.
+    const numericId = Number(cleanId);
+
+    // Check whether the ID is a valid positive whole number.
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+
+        console.log(
+            "Invalid ID. Please enter a positive whole number."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        // Read the expense.json file.
+        const data = await fs.readFile(
+            "./data/expense.json",
+            "utf8"
+        );
+
+        // Convert JSON text into a JavaScript array.
+        const expenses = JSON.parse(data);
+
+                // Find the expense with the selected ID.
+        const expense = expenses.find(
+            (item) => item.id === numericId
+        );
+                if (!expense) {
+
+            console.log(
+                "Expense with that ID was not found."
+            );
+
+            return;
+        }
+
+
+        // Check whether the expense exists.
+        const existingExpense = expenses.find(
+            (expense) => expense.id === numericId
+        );
+
+
+        // If the expense does not exist, stop the function.
+        if (!existingExpense) {
+
+            console.log(
+                "Expense with that ID was not found."
+            );
+
+            return;
+        }
+
+
+        // Create a new array without the expense
+        // that has the selected ID.
+        const remainingExpenses = expenses.filter(
+            (expense) => expense.id !== numericId
+        );
+
+
+        // Save the updated array back to the JSON file.
+        await fs.writeFile(
+            "./data/expense.json",
+            JSON.stringify(remainingExpenses, null, 2)
+        );
+
+
+        // Tell the user that deletion was successful.
+        console.log("Expense deleted successfully.");
+
+
+    } catch (err) {
+
+        // Display any error that occurs.
+        console.error(err);
+    }
+}
+
+
+// Function for updating an existing expense.
+async function updateExpense() {
+
+    // Ask the user for the ID of the expense to update.
+    const id = await askQuestion(
+        "Enter the expense ID to update: "
+    );
+
+    // Remove unnecessary spaces.
+    const cleanId = id.trim();
+
+    // Convert the ID from a string into a number.
+    const numericId = Number(cleanId);
+
+    // Check whether the ID is a valid positive whole number.
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+
+        console.log(
+            "Invalid ID. Please enter a positive whole number."
+        );
+
+        return;
+    }
+
+        try {
+
+        // Read the expense.json file.
+        const data = await fs.readFile(
+            "./data/expense.json",
+            "utf8"
+        );
+
+        // Convert JSON text into a JavaScript array.
+        const expenses = JSON.parse(data);
+
+    } catch (err) {
+
+        // Display any error that occurs.
+        console.error(err);
+    }
+}
+
+
+// Function for displaying all saved expenses.
+async function viewExpenses() {
+
+    // Read the expense.json file.
+    const data = await fs.readFile(
+        "./data/expense.json",
+        "utf8"
+    );
+
+    // Convert JSON text into a JavaScript array.
+    const expenses = JSON.parse(data);
+
+    //Go through each expense inthe array.
+    for (const expense of expenses) {
+        console.log(`Title: ${expense.title}`);
+        console.log(`Date: ${expense.date}`);
+        console.log(`ID: ${expense.id}`);
+        console.log(`Category: ${expense.category}`);
+        console.log(`Amount: Tsh ${expense.amount.toLocaleString()}`);
+        console.log('---');
+    }
+}
+
+// Start the program through the main menu.
+showMainMenu();
