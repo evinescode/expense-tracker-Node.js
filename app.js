@@ -36,7 +36,8 @@ function showMenu() {
     console.log("3. Delete Expense");
     console.log("4. Update Expense");
     console.log("5. Search Expense");
-console.log("6. Exit");
+console.log("6. Total Expenses");
+console.log("7. Exit");
 }
 
 
@@ -46,8 +47,8 @@ async function showMainMenu() {
     // Store the user's choice.
     let choice = "";
 
-    // Keep showing the menu until the user chooses 6.
-    while (choice !== "6") {
+    // Keep showing the menu until the user chooses 7.
+    while (choice !== "7") {
 
         // Display the menu.
         showMenu();
@@ -57,41 +58,46 @@ async function showMainMenu() {
 
 
         // Check which option the user selected.
-      if (choice === "1") {
+        if (choice === "1") {
 
-    await addExpense();
+            await addExpense();
 
-} else if (choice === "2") {
+        } else if (choice === "2") {
 
-    await viewExpenses();
+            await viewExpenses();
 
-} else if (choice === "3") {
+        } else if (choice === "3") {
 
-    await deleteExpense();
+            await deleteExpense();
 
-} else if (choice === "4") {
+        } else if (choice === "4") {
 
-    await updateExpense();
+            await updateExpense();
 
-} else if (choice === "5") {
+        } else if (choice === "5") {
 
-    // Search for an expense.
-    await searchExpense();
+            await searchExpense();
 
-} else if (choice === "6") {
+        } else if (choice === "6") {
 
-    // Exit the program.
-    console.log("Goodbye!");
+            await totalExpenses();
 
-    break;
+        } else if (choice === "7") {
 
-} else {
+            console.log("Goodbye!");
 
-    console.log(
-        "Invalid option. Please choose 1, 2, 3,  4,5 or 6."
-    );
-}    
- }
+            break;
+
+        } else {
+
+            console.log(
+                "Invalid option. Please choose 1, 2, 3, 4, 5, 6 or 7."
+            );
+        }
+    }
+
+    // Close readline after the program finishes.
+    rl.close();
 }
    
 
@@ -769,7 +775,56 @@ async function searchExpense() {
         console.error(err);
     }
 }
+// Function for calculating the total of all expenses.
+async function totalExpenses() {
 
+    try {
+
+        // Read the expense.json file.
+        const data = await fs.readFile(
+            "./data/expense.json",
+            "utf8"
+        );
+
+
+        // Convert JSON text into a JavaScript array.
+        const expenses = JSON.parse(data);
+
+
+        // Check whether there are no saved expenses.
+        if (expenses.length === 0) {
+
+            console.log("No expenses found.");
+
+            return;
+        }
+
+
+        // Calculate the total amount of all expenses.
+        const total = expenses.reduce(
+            (sum, expense) => sum + expense.amount,
+            0
+        );
+
+
+        // Display the total.
+        console.log("\n=============================");
+        console.log("       TOTAL EXPENSES");
+        console.log("=============================");
+
+        console.log(
+            `Total: Tsh ${total.toLocaleString()}`
+        );
+
+        console.log("=============================");
+
+
+    } catch (err) {
+
+        // Display any error that occurs.
+        console.error(err);
+    }
+}
 
 // Function for displaying all saved expenses.
 async function viewExpenses() {
