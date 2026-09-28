@@ -35,7 +35,8 @@ function showMenu() {
     console.log("2. View Expenses");
     console.log("3. Delete Expense");
     console.log("4. Update Expense");
-    console.log("5. Exit");
+    console.log("5. Search Expense");
+console.log("6. Exit");
 }
 
 
@@ -45,8 +46,8 @@ async function showMainMenu() {
     // Store the user's choice.
     let choice = "";
 
-    // Keep showing the menu until the user chooses 4.
-    while (choice !== "5") {
+    // Keep showing the menu until the user chooses 6.
+    while (choice !== "6") {
 
         // Display the menu.
         showMenu();
@@ -70,19 +71,29 @@ async function showMainMenu() {
 
 } else if (choice === "4") {
 
+    await updateExpense();
+
+} else if (choice === "5") {
+
+    // Search for an expense.
+    await searchExpense();
+
+} else if (choice === "6") {
+
+    // Exit the program.
     console.log("Goodbye!");
 
-    rl.close();
+    break;
 
 } else {
 
     console.log(
-        "Invalid option. Please choose 1, 2, 3, or 4."
+        "Invalid option. Please choose 1, 2, 3,  4,5 or 6."
     );
 }    
  }
-    
 }
+   
 
 
 // Main function where our Expense Tracker logic runs.
@@ -487,7 +498,7 @@ async function updateExpense() {
         return;
     }
 
-        try {
+    try {
 
         // Read the expense.json file.
         const data = await fs.readFile(
@@ -497,6 +508,260 @@ async function updateExpense() {
 
         // Convert JSON text into a JavaScript array.
         const expenses = JSON.parse(data);
+
+
+        // Find the expense with the selected ID.
+        const expense = expenses.find(
+            (item) => item.id === numericId
+        );
+        
+
+
+        // Check whether the expense exists.
+        if (!expense) {
+
+            console.log(
+                "Expense with that ID was not found."
+            );
+
+            return;
+        }
+
+
+        // Ask the user for the new expense title.
+        const title = await askQuestion(
+            "Enter new expense title: "
+        );
+
+
+        // Ask the user for the new date.
+        const date = await askQuestion(
+            "Enter new date (YYYY-MM-DD): "
+        );
+
+
+        // Ask the user for the new category.
+        const category = await askQuestion(
+            "Enter new category: "
+        );
+
+
+        // Ask the user for the new amount.
+        const amount = await askQuestion(
+            "Enter new amount: "
+        );
+
+
+        // Remove unnecessary spaces.
+        const cleanTitle = title.trim();
+        const cleanDate = date.trim();
+        const cleanCategory = category.trim();
+        const cleanAmount = amount.trim();
+
+
+        // Check whether any field is empty.
+        if (
+            cleanTitle === "" ||
+            cleanDate === "" ||
+            cleanCategory === "" ||
+            cleanAmount === ""
+        ) {
+
+            console.log("All fields are required.");
+
+            return;
+        }
+
+
+        // Check whether the title contains at least one letter.
+        const titlePattern = /[A-Za-z]/;
+
+        if (!titlePattern.test(cleanTitle)) {
+
+            console.log(
+                "Invalid title. Please enter a valid expense title."
+            );
+
+            return;
+        }
+
+
+        // Check whether the category contains at least one letter.
+        const categoryPattern = /[A-Za-z]/;
+
+        if (!categoryPattern.test(cleanCategory)) {
+
+            console.log(
+                "Invalid category. Please enter a valid category."
+            );
+
+            return;
+        }
+
+
+        // Check date format.
+        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+        if (!datePattern.test(cleanDate)) {
+
+            console.log(
+                "Invalid date format. Please use YYYY-MM-DD."
+            );
+
+            return;
+        }
+
+
+        // Split the date into year, month and day.
+        const [year, month, day] = cleanDate.split("-");
+
+
+        // Convert date parts into numbers.
+        const numericYear = Number(year);
+        const numericMonth = Number(month);
+        const numericDay = Number(day);
+
+
+        // Create a JavaScript Date object.
+        const dateObject = new Date(
+            numericYear,
+            numericMonth - 1,
+            numericDay
+        );
+
+
+        // Check whether the date actually exists.
+        const isValidDate =
+            dateObject.getFullYear() === numericYear &&
+            dateObject.getMonth() === numericMonth - 1 &&
+            dateObject.getDate() === numericDay;
+
+
+        // Stop if the date is invalid.
+        if (!isValidDate) {
+
+            console.log(
+                "Invalid date. Please enter a real date."
+            );
+
+            return;
+        }
+
+
+        // Convert the new amount into a number.
+        const numericAmount = Number(cleanAmount);
+
+
+        // Check whether the amount is valid.
+        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+
+            console.log(
+                "Invalid amount. Please enter a number greater than 0."
+            );
+
+            return;
+        }
+
+
+        // Update the existing expense.
+        expense.title = cleanTitle;
+        expense.date = cleanDate;
+        expense.category = cleanCategory;
+        expense.amount = numericAmount;
+
+
+        // Save the updated expenses back to the JSON file.
+        await fs.writeFile(
+            "./data/expense.json",
+            JSON.stringify(expenses, null, 2)
+        );
+
+
+        // Tell the user that the update was successful.
+        console.log("Expense updated successfully.");
+
+
+    } catch (err) {
+
+        // Display any error that occurs.
+        console.error(err);
+    }
+}
+
+
+// Function for searching an expense by ID.
+async function searchExpense() {
+
+    // Ask the user for the expense ID to search.
+    const id = await askQuestion(
+        "Enter the expense ID to search: "
+    );
+
+
+    // Remove unnecessary spaces.
+    const cleanId = id.trim();
+
+
+    // Convert the ID from a string into a number.
+    const numericId = Number(cleanId);
+
+
+    // Check whether the ID is a valid positive whole number.
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+
+        console.log(
+            "Invalid ID. Please enter a positive whole number."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        // Read the expense.json file.
+        const data = await fs.readFile(
+            "./data/expense.json",
+            "utf8"
+        );
+
+
+        // Convert JSON text into a JavaScript array.
+        const expenses = JSON.parse(data);
+
+
+        // Search for the expense using its ID.
+        const expense = expenses.find(
+            (item) => item.id === numericId
+        );
+
+
+        // Check whether the expense was found.
+        if (!expense) {
+
+            console.log(
+                "Expense with that ID was not found."
+            );
+
+            return;
+        }
+
+
+        // Display the found expense.
+        console.log("\n=============================");
+        console.log("        EXPENSE FOUND");
+        console.log("=============================");
+
+        console.log(`Title: ${expense.title}`);
+        console.log(`Date: ${expense.date}`);
+        console.log(`ID: ${expense.id}`);
+        console.log(`Category: ${expense.category}`);
+        console.log(
+            `Amount: Tsh ${expense.amount.toLocaleString()}`
+        );
+
+        console.log("=============================");
+
 
     } catch (err) {
 
@@ -531,3 +796,4 @@ async function viewExpenses() {
 
 // Start the program through the main menu.
 showMainMenu();
+
