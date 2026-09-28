@@ -37,7 +37,9 @@ function showMenu() {
     console.log("4. Update Expense");
     console.log("5. Search Expense");
 console.log("6. Total Expenses");
-console.log("7. Exit");
+console.log("7. Filter Expenses by Category");
+console.log("8. Filter Expenses by Date");
+console.log("9. Exit");
 }
 
 
@@ -47,8 +49,8 @@ async function showMainMenu() {
     // Store the user's choice.
     let choice = "";
 
-    // Keep showing the menu until the user chooses 7.
-    while (choice !== "7") {
+    // Keep showing the menu until the user chooses 9.
+    while (choice !== "9") {
 
         // Display the menu.
         showMenu();
@@ -79,10 +81,17 @@ async function showMainMenu() {
             await searchExpense();
 
         } else if (choice === "6") {
+       
 
             await totalExpenses();
+             } else if (choice === "7") {
+                await filterExpensesByCategory();
 
-        } else if (choice === "7") {
+        } else if (choice === "8") {
+
+            await filterExpensesByDate();
+
+        } else if (choice === "9") {
 
             console.log("Goodbye!");
 
@@ -91,7 +100,7 @@ async function showMainMenu() {
         } else {
 
             console.log(
-                "Invalid option. Please choose 1, 2, 3, 4, 5, 6 or 7."
+                "Invalid option. Please choose 1, 2, 3, 4, 5, 6, 7 or 8."
             );
         }
     }
@@ -826,6 +835,109 @@ async function totalExpenses() {
     }
 }
 
+// Function for filtering expenses by category.
+async function filterExpensesByCategory() {
+
+    // Ask the user for the category to search.
+    const category = await askQuestion(
+        "Enter the category to filter: "
+    );
+
+
+    // Remove unnecessary spaces.
+    const cleanCategory = category.trim();
+
+
+    // Check whether the category is empty.
+    if (cleanCategory === "") {
+
+        console.log("Category is required.");
+
+        return;
+    }
+
+
+    // Check whether the category contains at least one letter.
+    const categoryPattern = /[A-Za-z]/;
+
+    if (!categoryPattern.test(cleanCategory)) {
+
+        console.log(
+            "Invalid category. Please enter a valid category."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        // Read the expense.json file.
+        const data = await fs.readFile(
+            "./data/expense.json",
+            "utf8"
+        );
+
+
+        // Convert JSON text into a JavaScript array.
+        const expenses = JSON.parse(data);
+
+
+        // Filter expenses by category.
+        //
+        // toLowerCase() allows:
+        // Food
+        // food
+        // FOOD
+        // to be treated as the same category.
+        const filteredExpenses = expenses.filter(
+            (expense) =>
+                expense.category.toLowerCase() ===
+                cleanCategory.toLowerCase()
+        );
+
+
+        // Check whether any expense was found.
+        if (filteredExpenses.length === 0) {
+
+            console.log(
+                `No expenses found in category "${cleanCategory}".`
+            );
+
+            return;
+        }
+
+
+        // Display the filtered expenses.
+        console.log("\n=============================");
+        console.log(
+            `      ${cleanCategory.toUpperCase()} EXPENSES`
+        );
+        console.log("=============================");
+
+
+        // Go through each matching expense.
+        for (const expense of filteredExpenses) {
+
+            console.log(`Title: ${expense.title}`);
+            console.log(`Date: ${expense.date}`);
+            console.log(`ID: ${expense.id}`);
+            console.log(`Category: ${expense.category}`);
+            console.log(
+                `Amount: Tsh ${expense.amount.toLocaleString()}`
+            );
+
+            console.log("-----------------------------");
+        }
+
+
+    } catch (err) {
+
+        // Display any error that occurs.
+        console.error(err);
+    }
+}
+
 // Function for displaying all saved expenses.
 async function viewExpenses() {
 
@@ -846,6 +958,133 @@ async function viewExpenses() {
         console.log(`Category: ${expense.category}`);
         console.log(`Amount: Tsh ${expense.amount.toLocaleString()}`);
         console.log('---');
+    }
+
+    // Calculate the total amount for this category.
+const categoryTotal = filteredExpenses.reduce(
+    (sum, expense) => sum + expense.amount,
+    0
+);
+
+// Display the total amount for this category.
+console.log(
+    `Total ${cleanCategory}: Tsh ${categoryTotal.toLocaleString()}`
+);
+
+console.log("=============================");
+}
+
+// Function for filtering expenses by date.
+async function filterExpensesByDate() {
+
+    // Ask the user for the date.
+    const date = await askQuestion(
+        "Enter the date to filter (YYYY-MM-DD): "
+    );
+
+    // Remove unnecessary spaces.
+    const cleanDate = date.trim();
+
+    // Check if the date is empty.
+    if (cleanDate === "") {
+
+        console.log("Date is required.");
+
+        return;
+    }
+
+    // Check the date format.
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (!datePattern.test(cleanDate)) {
+
+        console.log(
+            "Invalid date format. Please use YYYY-MM-DD."
+        );
+
+        return;
+    }
+
+    // Separate year, month and day.
+    const [year, month, day] = cleanDate.split("-").map(Number);
+
+    // Create a JavaScript Date object.
+    const testDate = new Date(year, month - 1, day);
+
+    // Check whether the date actually exists.
+    if (
+        testDate.getFullYear() !== year ||
+        testDate.getMonth() !== month - 1 ||
+        testDate.getDate() !== day
+    ) {
+
+        console.log("Invalid date. Please enter a real date.");
+
+        return;
+    }
+
+    try {
+
+        // Read the expense file.
+        const data = await fs.readFile(
+            "./data/expense.json",
+            "utf8"
+        );
+
+        // Convert JSON data into a JavaScript array.
+        const expenses = JSON.parse(data);
+
+        // Filter expenses by the selected date.
+        const filteredExpenses = expenses.filter(
+            (expense) => expense.date === cleanDate
+        );
+
+        // Check whether any expense was found.
+        if (filteredExpenses.length === 0) {
+
+            console.log(
+                `No expenses found on ${cleanDate}.`
+            );
+
+            return;
+        }
+
+        // Display heading.
+        console.log("\n=============================");
+        console.log(`   EXPENSES ON ${cleanDate}`);
+        console.log("=============================");
+
+        // Display matching expenses.
+        for (const expense of filteredExpenses) {
+
+            console.log(`Title: ${expense.title}`);
+            console.log(`Date: ${expense.date}`);
+            console.log(`ID: ${expense.id}`);
+            console.log(`Category: ${expense.category}`);
+            console.log(
+                `Amount: Tsh ${expense.amount.toLocaleString()}`
+            );
+
+            console.log("-----------------------------");
+        }
+
+        // Calculate the total expenses for this date.
+        const dateTotal = filteredExpenses.reduce(
+            (sum, expense) => sum + expense.amount,
+            0
+        );
+
+        // Display the total.
+        console.log(
+            `Total for ${cleanDate}: Tsh ${dateTotal.toLocaleString()}`
+        );
+
+        console.log("=============================");
+
+    } catch (err) {
+
+        // Display any error that occurs.
+        console.error(err);
     }
 }
 
