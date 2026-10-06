@@ -100,7 +100,7 @@ async function showMainMenu() {
         } else {
 
             console.log(
-                "Invalid option. Please choose 1, 2, 3, 4, 5, 6, 7 or 8."
+                "Invalid option. Please choose 1 to 9."
             );
         }
     }
@@ -287,15 +287,7 @@ if (!Number.isInteger(numericId) || numericId <= 0) {
         const expenses = JSON.parse(data);
 
 
-        // Check whether there are no saved expenses.
-if (expenses.length === 0) {
 
-    // Tell the user that there are no expenses.
-    console.log("No expenses found.");
-
-    // Stop this function.
-    return;
-}
 
 
         // ------------------------------------------------
@@ -446,21 +438,9 @@ async function deleteExpense() {
         }
 
 
-        // Check whether the expense exists.
-        const existingExpense = expenses.find(
-            (expense) => expense.id === numericId
-        );
+        
 
 
-        // If the expense does not exist, stop the function.
-        if (!existingExpense) {
-
-            console.log(
-                "Expense with that ID was not found."
-            );
-
-            return;
-        }
 
 
         // Create a new array without the expense
@@ -915,20 +895,33 @@ async function filterExpensesByCategory() {
         );
         console.log("=============================");
 
+// Go through each matching expense.
+for (const expense of filteredExpenses) {
 
-        // Go through each matching expense.
-        for (const expense of filteredExpenses) {
+    console.log(`Title: ${expense.title}`);
+    console.log(`Date: ${expense.date}`);
+    console.log(`ID: ${expense.id}`);
+    console.log(`Category: ${expense.category}`);
+    console.log(
+        `Amount: Tsh ${expense.amount.toLocaleString()}`
+    );
 
-            console.log(`Title: ${expense.title}`);
-            console.log(`Date: ${expense.date}`);
-            console.log(`ID: ${expense.id}`);
-            console.log(`Category: ${expense.category}`);
-            console.log(
-                `Amount: Tsh ${expense.amount.toLocaleString()}`
-            );
+    console.log("-----------------------------");
+}
 
-            console.log("-----------------------------");
-        }
+// Calculate the total amount for this category.
+const categoryTotal = filteredExpenses.reduce(
+    (sum, expense) => sum + expense.amount,
+    0
+);
+
+// Display the category total.
+console.log(
+    `Total ${cleanCategory}: Tsh ${categoryTotal.toLocaleString()}`
+);
+
+console.log("=============================");
+        
 
 
     } catch (err) {
@@ -938,40 +931,42 @@ async function filterExpensesByCategory() {
     }
 }
 
+
 // Function for displaying all saved expenses.
 async function viewExpenses() {
+    try {
+        const data = await fs.readFile(
+            "./data/expense.json",
+            "utf8"
+        );
 
-    // Read the expense.json file.
-    const data = await fs.readFile(
-        "./data/expense.json",
-        "utf8"
-    );
+        const expenses = JSON.parse(data);
 
-    // Convert JSON text into a JavaScript array.
-    const expenses = JSON.parse(data);
+        if (expenses.length === 0) {
+            console.log("No expenses found.");
+            return;
+        }
 
-    //Go through each expense inthe array.
-    for (const expense of expenses) {
-        console.log(`Title: ${expense.title}`);
-        console.log(`Date: ${expense.date}`);
-        console.log(`ID: ${expense.id}`);
-        console.log(`Category: ${expense.category}`);
-        console.log(`Amount: Tsh ${expense.amount.toLocaleString()}`);
-        console.log('---');
+        console.log("\n=============================");
+        console.log("        ALL EXPENSES");
+        console.log("=============================");
+
+        for (const expense of expenses) {
+            console.log(`Title: ${expense.title}`);
+            console.log(`Date: ${expense.date}`);
+            console.log(`ID: ${expense.id}`);
+            console.log(`Category: ${expense.category}`);
+            console.log(
+                `Amount: Tsh ${expense.amount.toLocaleString()}`
+            );
+            console.log("-----------------------------");
+        }
+
+        console.log("=============================");
+
+    } catch (err) {
+        console.error(err);
     }
-
-    // Calculate the total amount for this category.
-const categoryTotal = filteredExpenses.reduce(
-    (sum, expense) => sum + expense.amount,
-    0
-);
-
-// Display the total amount for this category.
-console.log(
-    `Total ${cleanCategory}: Tsh ${categoryTotal.toLocaleString()}`
-);
-
-console.log("=============================");
 }
 
 // Function for filtering expenses by date.

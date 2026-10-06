@@ -77,13 +77,6 @@
     "amount": 3000
   },
   {
-    "title": "internet",
-    "date": "2026-09-28",
-    "id": 17,
-    "category": "bill",
-    "amount": 12000
-  },
-  {
     "title": "lunch",
     "date": "2026-09-23",
     "id": 21,
@@ -91,11 +84,11 @@
     "amount": 23000
   },
   {
-    "title": "lunch",
-    "date": "2026-09-23",
+    "title": "internet",
+    "date": "2026-10-03",
     "id": 23,
-    "category": "food",
-    "amount": 23400
+    "category": "bill",
+    "amount": 13000
   },
   {
     "title": "dinner",
