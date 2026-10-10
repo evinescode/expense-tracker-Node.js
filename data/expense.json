@@ -70,11 +70,11 @@
     "amount": 4500
   },
   {
-    "title": "transport",
-    "date": "2026-09-17",
+    "title": "rent",
+    "date": "2026-10-07",
     "id": 14,
-    "category": "transportation",
-    "amount": 3000
+    "category": "rent",
+    "amount": 180000
   },
   {
     "title": "lunch",
@@ -91,10 +91,10 @@
     "amount": 13000
   },
   {
-    "title": "dinner",
-    "date": "2026-09-23",
-    "id": 24,
-    "category": "food",
-    "amount": 34000
+    "title": "electricity",
+    "date": "2026-10-07",
+    "id": 26,
+    "category": "bill",
+    "amount": 10000
   }
 ]
