@@ -24,6 +24,101 @@ function askQuestion(question) {
     });
 }
 
+
+// ------------------------------------------------
+// REUSABLE FILE FUNCTIONS
+// ------------------------------------------------
+
+// This function reads the expense.json file
+// and converts the JSON data into a JavaScript array.
+async function readExpenses() {
+
+    // Read the expense.json file.
+    const data = await fs.readFile(
+        "./data/expense.json",
+        "utf8"
+    );
+
+    // Convert the JSON text into a JavaScript array
+    // and return it to the function that called it.
+    return JSON.parse(data);
+}
+
+
+// This function saves the expenses array
+// back into the expense.json file.
+async function saveExpenses(expenses) {
+
+    // Convert the JavaScript array into JSON text
+    // and save it inside expense.json.
+    await fs.writeFile(
+        "./data/expense.json",
+        JSON.stringify(expenses, null, 2)
+    );
+} 
+// ------------------------------------------------
+// REUSABLE VALIDATION FUNCTIONS
+// ------------------------------------------------
+
+
+// ------------------------------------------------
+// REUSABLE VALIDATION FUNCTIONS
+// ------------------------------------------------
+
+// This function checks whether an ID is a valid
+// positive whole number.
+function isValidId(id) {
+
+    // Convert the ID from string to number.
+    const numericId = Number(id);
+
+    // Return true if the ID is a whole number
+    // and greater than zero.
+    return Number.isInteger(numericId) && numericId > 0;
+}
+
+
+// This function checks whether text contains
+// at least one letter.
+function isValidText(text) {
+
+    // Regular expression that checks for
+    // at least one English letter.
+    const textPattern = /[A-Za-z]/;
+
+    // Return true if the text contains a letter.
+    return textPattern.test(text);
+}
+
+// This function checks whether a date is valid.
+function isValidDate(date) {
+
+    // Check whether the date follows YYYY-MM-DD format.
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+    // Stop if the date format is incorrect.
+    if (!datePattern.test(date)) {
+        return false;
+    }
+
+    // Separate the year, month and day.
+    const [year, month, day] = date.split("-").map(Number);
+
+    // Create a JavaScript Date object.
+    const dateObject = new Date(year, month - 1, day);
+
+    // Return true only if the date actually exists.
+    return (
+        dateObject.getFullYear() === year &&
+        dateObject.getMonth() === month - 1 &&
+        dateObject.getDate() === day
+    );
+}
+
+
+
+
+
 // Display the main menu to the user.
 function showMenu() {
 
@@ -163,28 +258,29 @@ const numericId = Number(cleanId);
         return;
     }
 
-    // Check whether the title contains at least one letter.
-const titlePattern = /[A-Za-z]/;
-
-if (!titlePattern.test(cleanTitle)) {
-    console.log("Invalid title. Please enter a valid expense title.");
-  
+    // Check whether the title is valid and contains at least one letter.
+    if (!isValidText(cleanTitle)) {
+        console.log("Invalid title. Please enter a valid expense title.");
+    
     return;
 }
 
-// Check whether the category contains at least one letter.
-const categoryPattern = /[A-Za-z]/;
+// Check whether the category is valid.
+if (!isValidText(cleanCategory)) {
 
-if (!categoryPattern.test(cleanCategory)) {
-    console.log("Invalid category. Please enter a valid category.");
-   
+    // Tell the user that the category is invalid.
+    console.log(
+        "Invalid category. Please enter a valid category."
+    );
+
+    // Stop the function.
     return;
 }
 
 
     // Check whether the ID is a whole number
 // and greater than zero.
-if (!Number.isInteger(numericId) || numericId <= 0) {
+if (!isValidId(cleanId)) {
 
     // Tell the user that the ID is invalid.
     console.log("Invalid ID. Please enter a positive whole number.");
@@ -198,93 +294,27 @@ if (!Number.isInteger(numericId) || numericId <= 0) {
 
 
     // ------------------------------------------------
-    // 2. CHECK DATE FORMAT
-    // ------------------------------------------------
+  // Check whether the date is valid.
+if (!isValidDate(cleanDate)) {
 
-    // This regular expression checks whether
-    // the date follows YYYY-MM-DD.
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-
-
-    // Test the user's date against the pattern.
-    if (!datePattern.test(cleanDate)) {
-
-        console.log(
-            "Invalid date format. Please use YYYY-MM-DD."
-        );
-
-       
-
-        return;
-    }
-
-
-    // ------------------------------------------------
-    // 3. CHECK WHETHER THE DATE ACTUALLY EXISTS
-    // ------------------------------------------------
-
-    const [year, month, day] = cleanDate.split("-");
-
-
-    // Convert the three parts from strings to numbers.
-    const numericYear = Number(year);
-    const numericMonth = Number(month);
-    const numericDay = Number(day);
-
-
-    // Create a JavaScript Date object.
-    //
-    // JavaScript months start from 0:
-    //
-    // January = 0
-    // February = 1
-    // March = 2
-    // ...
-    // December = 11
-    const dateObject = new Date(
-        numericYear,
-        numericMonth - 1,
-        numericDay
+    // Display an error if the date is invalid.
+    console.log(
+        "Invalid date. Please enter a valid date in YYYY-MM-DD format."
     );
 
-
-    // Check whether JavaScript created
-    // exactly the same date we entered.
-    const isValidDate =
-        dateObject.getFullYear() === numericYear &&
-        dateObject.getMonth() === numericMonth - 1 &&
-        dateObject.getDate() === numericDay;
-
-
-    // If the date does not actually exist,
-    // stop the program.
-    if (!isValidDate) {
-
-        console.log(
-            "Invalid date. Please enter a real date."
-        );
-
-       
-
-        return;
-    }
+    // Stop adding the expense.
+    return;
+}
 
 
     // ------------------------------------------------
-    // 4. READ THE JSON FILE
-    // ------------------------------------------------
+// 4. READ THE JSON FILE
+// ------------------------------------------------
 
-    try {
+try {
 
-        // Read the expense.json file.
-        const data = await fs.readFile(
-            "./data/expense.json",
-            "utf8"
-        );
-
-
-        // Convert JSON text into a JavaScript array.
-        const expenses = JSON.parse(data);
+    // Read all expenses from expense.json.
+    const expenses = await readExpenses();
 
 
 
@@ -295,21 +325,18 @@ if (!Number.isInteger(numericId) || numericId <= 0) {
         // ------------------------------------------------
 
         // Convert amount from string to number.
-        const numericAmount = Number(cleanAmount);
-
-
-       // Check whether the amount is a valid number
-// and greater than zero.
-if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      // Check whether the amount is valid.
+if (!isValidAmount(cleanAmount)) {
 
     console.log(
         "Invalid amount. Please enter a number greater than 0."
     );
 
-   
-
     return;
 }
+
+// Convert the valid amount into a number.
+const numericAmount = Number(cleanAmount);
         
 
 
@@ -366,10 +393,8 @@ if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
         // 9. SAVE ARRAY BACK TO JSON FILE
         // ------------------------------------------------
 
-        await fs.writeFile(
-            "./data/expense.json",
-            JSON.stringify(expenses, null, 2)
-        );
+      // Save the updated expenses to expense.json.
+await saveExpenses(expenses);
 
 
         // Tell the user that saving was successful.
@@ -400,29 +425,24 @@ async function deleteExpense() {
     const cleanId = id.trim();
 
     // Convert the ID from a string into a number.
-    const numericId = Number(cleanId);
+ // Check whether the ID is valid.
+if (!isValidId(cleanId)) {
 
-    // Check whether the ID is a valid positive whole number.
-    if (!Number.isInteger(numericId) || numericId <= 0) {
+    console.log(
+        "Invalid ID. Please enter a positive whole number."
+    );
 
-        console.log(
-            "Invalid ID. Please enter a positive whole number."
-        );
+    return;
+}
 
-        return;
-    }
+// Convert the valid ID into a number.
+const numericId = Number(cleanId);
 
 
     try {
 
-        // Read the expense.json file.
-        const data = await fs.readFile(
-            "./data/expense.json",
-            "utf8"
-        );
-
-        // Convert JSON text into a JavaScript array.
-        const expenses = JSON.parse(data);
+       // Read all expenses from expense.json.
+const expenses = await readExpenses();
 
                 // Find the expense with the selected ID.
         const expense = expenses.find(
@@ -449,12 +469,8 @@ async function deleteExpense() {
             (expense) => expense.id !== numericId
         );
 
-
-        // Save the updated array back to the JSON file.
-        await fs.writeFile(
-            "./data/expense.json",
-            JSON.stringify(remainingExpenses, null, 2)
-        );
+// Save the remaining expenses to expense.json.
+await saveExpenses(remainingExpenses);
 
 
         // Tell the user that deletion was successful.
@@ -484,7 +500,7 @@ async function updateExpense() {
     const numericId = Number(cleanId);
 
     // Check whether the ID is a valid positive whole number.
-    if (!Number.isInteger(numericId) || numericId <= 0) {
+    if (!isValidId(cleanId)) {
 
         console.log(
             "Invalid ID. Please enter a positive whole number."
@@ -495,14 +511,8 @@ async function updateExpense() {
 
     try {
 
-        // Read the expense.json file.
-        const data = await fs.readFile(
-            "./data/expense.json",
-            "utf8"
-        );
-
-        // Convert JSON text into a JavaScript array.
-        const expenses = JSON.parse(data);
+       // Read all expenses from expense.json.
+const expenses = await readExpenses();
 
 
         // Find the expense with the selected ID.
@@ -568,79 +578,40 @@ async function updateExpense() {
         }
 
 
-        // Check whether the title contains at least one letter.
-        const titlePattern = /[A-Za-z]/;
+        // Check whether the title is valid.
+if (!isValidText(cleanTitle)) {
 
-        if (!titlePattern.test(cleanTitle)) {
+    // Tell the user that the title is invalid.
+    console.log(
+        "Invalid title. Please enter a valid expense title."
+    );
 
-            console.log(
-                "Invalid title. Please enter a valid expense title."
-            );
-
-            return;
-        }
-
-
-        // Check whether the category contains at least one letter.
-        const categoryPattern = /[A-Za-z]/;
-
-        if (!categoryPattern.test(cleanCategory)) {
-
-            console.log(
-                "Invalid category. Please enter a valid category."
-            );
-
-            return;
-        }
+    // Stop the update function.
+    return;
+}
 
 
-        // Check date format.
-        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+// Check whether the category is valid.
+if (!isValidText(cleanCategory)) {
 
-        if (!datePattern.test(cleanDate)) {
+    console.log(
+        "Invalid category. Please enter a valid category."
+    );
 
-            console.log(
-                "Invalid date format. Please use YYYY-MM-DD."
-            );
+    return;
+}
 
-            return;
-        }
+      // Check whether the new date is valid.
+if (!isValidDate(cleanDate)) {
 
+    // Display an error if the date is invalid.
+    console.log(
+        "Invalid date. Please enter a valid date in YYYY-MM-DD format."
+    );
 
-        // Split the date into year, month and day.
-        const [year, month, day] = cleanDate.split("-");
-
-
-        // Convert date parts into numbers.
-        const numericYear = Number(year);
-        const numericMonth = Number(month);
-        const numericDay = Number(day);
-
-
-        // Create a JavaScript Date object.
-        const dateObject = new Date(
-            numericYear,
-            numericMonth - 1,
-            numericDay
-        );
-
-
-        // Check whether the date actually exists.
-        const isValidDate =
-            dateObject.getFullYear() === numericYear &&
-            dateObject.getMonth() === numericMonth - 1 &&
-            dateObject.getDate() === numericDay;
-
-
-        // Stop if the date is invalid.
-        if (!isValidDate) {
-
-            console.log(
-                "Invalid date. Please enter a real date."
-            );
-
-            return;
-        }
+    // Stop updating the expense.
+    return;
+}
 
 
         // Convert the new amount into a number.
@@ -666,10 +637,7 @@ async function updateExpense() {
 
 
         // Save the updated expenses back to the JSON file.
-        await fs.writeFile(
-            "./data/expense.json",
-            JSON.stringify(expenses, null, 2)
-        );
+        await saveExpenses(expenses);
 
 
         // Tell the user that the update was successful.
@@ -697,32 +665,27 @@ async function searchExpense() {
     const cleanId = id.trim();
 
 
-    // Convert the ID from a string into a number.
-    const numericId = Number(cleanId);
+  
 
 
-    // Check whether the ID is a valid positive whole number.
-    if (!Number.isInteger(numericId) || numericId <= 0) {
+  // Check whether the ID is valid.
+if (!isValidId(cleanId)) {
 
-        console.log(
-            "Invalid ID. Please enter a positive whole number."
-        );
+    console.log(
+        "Invalid ID. Please enter a positive whole number."
+    );
 
-        return;
-    }
+    return;
+}
+
+// Convert the valid ID into a number.
+const numericId = Number(cleanId);
 
 
     try {
 
-        // Read the expense.json file.
-        const data = await fs.readFile(
-            "./data/expense.json",
-            "utf8"
-        );
-
-
-        // Convert JSON text into a JavaScript array.
-        const expenses = JSON.parse(data);
+       // Read all expenses from expense.json.
+const expenses = await readExpenses();
 
 
         // Search for the expense using its ID.
@@ -770,14 +733,8 @@ async function totalExpenses() {
     try {
 
         // Read the expense.json file.
-        const data = await fs.readFile(
-            "./data/expense.json",
-            "utf8"
-        );
-
-
-        // Convert JSON text into a JavaScript array.
-        const expenses = JSON.parse(data);
+      // Read all expenses from expense.json.
+const expenses = await readExpenses();
 
 
         // Check whether there are no saved expenses.
@@ -852,15 +809,9 @@ async function filterExpensesByCategory() {
 
     try {
 
-        // Read the expense.json file.
-        const data = await fs.readFile(
-            "./data/expense.json",
-            "utf8"
-        );
 
-
-        // Convert JSON text into a JavaScript array.
-        const expenses = JSON.parse(data);
+    // Read all expenses from expense.json.
+    const expenses = await readExpenses();
 
 
         // Filter expenses by category.
@@ -932,15 +883,12 @@ console.log("=============================");
 }
 
 
+
 // Function for displaying all saved expenses.
 async function viewExpenses() {
     try {
-        const data = await fs.readFile(
-            "./data/expense.json",
-            "utf8"
-        );
-
-        const expenses = JSON.parse(data);
+       // Read all expenses from expense.json.
+const expenses = await readExpenses();
 
         if (expenses.length === 0) {
             console.log("No expenses found.");
@@ -988,46 +936,22 @@ async function filterExpensesByDate() {
         return;
     }
 
-    // Check the date format.
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+// Check whether the selected date is valid.
+if (!isValidDate(cleanDate)) {
 
-    if (!datePattern.test(cleanDate)) {
+    // Display an error if the date is invalid.
+    console.log(
+        "Invalid date. Please enter a valid date in YYYY-MM-DD format."
+    );
 
-        console.log(
-            "Invalid date format. Please use YYYY-MM-DD."
-        );
-
-        return;
-    }
-
-    // Separate year, month and day.
-    const [year, month, day] = cleanDate.split("-").map(Number);
-
-    // Create a JavaScript Date object.
-    const testDate = new Date(year, month - 1, day);
-
-    // Check whether the date actually exists.
-    if (
-        testDate.getFullYear() !== year ||
-        testDate.getMonth() !== month - 1 ||
-        testDate.getDate() !== day
-    ) {
-
-        console.log("Invalid date. Please enter a real date.");
-
-        return;
-    }
+    // Stop filtering expenses.
+    return;
+}
 
     try {
 
-        // Read the expense file.
-        const data = await fs.readFile(
-            "./data/expense.json",
-            "utf8"
-        );
-
-        // Convert JSON data into a JavaScript array.
-        const expenses = JSON.parse(data);
+    // Read all expenses from expense.json.
+    const expenses = await readExpenses();
 
         // Filter expenses by the selected date.
         const filteredExpenses = expenses.filter(
