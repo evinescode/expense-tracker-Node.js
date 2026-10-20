@@ -96,5 +96,12 @@
     "id": 26,
     "category": "bill",
     "amount": 10000
+  },
+  {
+    "title": "drinks",
+    "date": "2026-10-13",
+    "id": 11,
+    "category": "coffee",
+    "amount": 4000
   }
 ]

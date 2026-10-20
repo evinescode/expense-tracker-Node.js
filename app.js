@@ -5,6 +5,13 @@ const readline = require("readline");
 // Import the promises version of the File System module.
 // We use it to read and write our expense.json file.
 const fs = require("fs").promises;
+// Import reusable validation functions.
+const {
+    isValidId,
+    isValidText,
+    isValidDate,
+    isValidAmount
+} = require("./utils/validation");
 
 
 // Create the readline interface.
@@ -56,65 +63,6 @@ async function saveExpenses(expenses) {
         JSON.stringify(expenses, null, 2)
     );
 } 
-// ------------------------------------------------
-// REUSABLE VALIDATION FUNCTIONS
-// ------------------------------------------------
-
-
-// ------------------------------------------------
-// REUSABLE VALIDATION FUNCTIONS
-// ------------------------------------------------
-
-// This function checks whether an ID is a valid
-// positive whole number.
-function isValidId(id) {
-
-    // Convert the ID from string to number.
-    const numericId = Number(id);
-
-    // Return true if the ID is a whole number
-    // and greater than zero.
-    return Number.isInteger(numericId) && numericId > 0;
-}
-
-
-// This function checks whether text contains
-// at least one letter.
-function isValidText(text) {
-
-    // Regular expression that checks for
-    // at least one English letter.
-    const textPattern = /[A-Za-z]/;
-
-    // Return true if the text contains a letter.
-    return textPattern.test(text);
-}
-
-// This function checks whether a date is valid.
-function isValidDate(date) {
-
-    // Check whether the date follows YYYY-MM-DD format.
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-
-    // Stop if the date format is incorrect.
-    if (!datePattern.test(date)) {
-        return false;
-    }
-
-    // Separate the year, month and day.
-    const [year, month, day] = date.split("-").map(Number);
-
-    // Create a JavaScript Date object.
-    const dateObject = new Date(year, month - 1, day);
-
-    // Return true only if the date actually exists.
-    return (
-        dateObject.getFullYear() === year &&
-        dateObject.getMonth() === month - 1 &&
-        dateObject.getDate() === day
-    );
-}
-
 
 
 
@@ -615,18 +563,14 @@ if (!isValidDate(cleanDate)) {
 
 
         // Convert the new amount into a number.
-        const numericAmount = Number(cleanAmount);
+      
+if (!isValidAmount(cleanAmount)) {
+    console.log("Invalid amount. Please enter a number greater than 0.");
+    return;
+}
 
+const numericAmount = Number(cleanAmount);
 
-        // Check whether the amount is valid.
-        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-
-            console.log(
-                "Invalid amount. Please enter a number greater than 0."
-            );
-
-            return;
-        }
 
 
         // Update the existing expense.
@@ -795,16 +739,13 @@ async function filterExpensesByCategory() {
 
 
     // Check whether the category contains at least one letter.
-    const categoryPattern = /[A-Za-z]/;
+  if (!isValidText(cleanCategory)) {
+    console.log(
+        "Invalid category. Please enter a valid category."
+    );
 
-    if (!categoryPattern.test(cleanCategory)) {
-
-        console.log(
-            "Invalid category. Please enter a valid category."
-        );
-
-        return;
-    }
+    return;
+}
 
 
     try {
