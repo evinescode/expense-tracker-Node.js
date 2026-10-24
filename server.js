@@ -31,6 +31,8 @@ const expenseFile = path.join(
 
 // Allow the server to receive JSON data.
 app.use(express.json());
+// Serve frontend files from the public folder.
+app.use(express.static(path.join(__dirname, "public")));
 
 // Create our first API route.
 // GET means we want to retrieve data.

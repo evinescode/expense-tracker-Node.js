@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Allows the browser to display characters correctly -->
+    <meta charset="UTF-8">
+
+    <!-- Makes the UI responsive on computers and phones -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- The title displayed on the browser tab -->
+    <title>Expense Tracker</title>
+
+    <!-- Connect the HTML file to our CSS file -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Main container holding the entire application -->
+    <div class="app-container">
+
+        <!-- Sidebar: navigation area on the left -->
+        <aside class="sidebar">
+            <h2 class="logo">Expense<span>Track</span></h2>
+
+            <nav>
+                <a href="#" class="nav-link active">Dashboard</a>
+                <a href="#expenses" class="nav-link">My Expenses</a>
+                <a href="#add-expense" class="nav-link">Add Expense</a>
+            </nav>
+
+            <p class="sidebar-footer">Manage your money wisely.</p>
+        </aside>
+
+        <!-- Main content area -->
+        <main class="main-content">
+
+            <!-- Top section of the dashboard -->
+            <header class="topbar">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Welcome back! Track your spending here.</p>
+                </div>
+
+                <!-- Button for showing the add expense form -->
+                <button id="show-form-btn" type="button">
+                    + Add Expense
+                </button>
+            </header>
+
+            <!-- Summary cards -->
+            <section class="summary-cards">
+
+                <article class="summary-card">
+                    <p>Total Expenses</p>
+                    <h2 id="total-expenses">Tsh 0</h2>
+                </article>
+
+                <article class="summary-card">
+                    <p>Number of Expenses</p>
+                    <h2 id="expense-count">0</h2>
+                </article>
+
+                <article class="summary-card">
+                    <p>Latest Expense</p>
+                    <h2 id="latest-expense">None</h2>
+                </article>
+
+            </section>
+
+            <!-- Form for adding a new expense -->
+            <section id="add-expense" class="panel hidden">
+                <h2>Add New Expense</h2>
+
+                <form id="expense-form">
+
+                    <div class="form-group">
+                        <label for="title">Expense Title</label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            placeholder="e.g. Lunch"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expense-date">Date</label>
+                        <input
+                            type="date"
+                            id="expense-date"
+                            name="date"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expense-id">Expense ID</label>
+                        <input
+                            type="number"
+                            id="expense-id"
+                            name="id"
+                            placeholder="e.g. 31"
+                            min="1"
+                            step="1"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <input
+                            type="text"
+                            id="category"
+                            name="category"
+                            placeholder="e.g. Food"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Amount (Tsh)</label>
+                        <input
+                            type="number"
+                            id="amount"
+                            name="amount"
+                            placeholder="e.g. 5000"
+                            min="0.01"
+                            step="any"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit">Save Expense</button>
+                        <button type="button" id="cancel-form-btn">
+                            Cancel
+                        </button>
+                    </div>
+
+                    <!-- Displays success or error messages -->
+                    <p id="form-message" role="status"></p>
+                </form>
+            </section>
+
+            <!-- Table displaying expenses from our API -->
+            <section id="expenses" class="panel">
+                <div class="section-heading">
+                    <div>
+                        <h2>Recent Expenses</h2>
+                        <p>Review your recorded transactions.</p>
+                    </div>
+
+                    <!-- Reloads expense records -->
+                    <button id="refresh-btn" class="secondary-btn" type="button">
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <!-- JavaScript will insert expense rows here -->
+                        <tbody id="expenses-table-body">
+                            <tr>
+                                <td colspan="6">Loading expenses...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Displays API loading errors -->
+                <p id="table-message" role="status"></p>
+            </section>
+
+            <!-- Footer -->
+            <footer class="page-footer">
+                <p>Expense Tracker &copy; 2026</p>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- Load our JavaScript after the page elements -->
+    <script src="script.js"></script>
+</body>
+</html>
